@@ -54,11 +54,16 @@ static void gettimeofday_syscall_nofail(struct timeval *tv, struct timezone *tz)
 		error(EXIT_FAILURE, errno, "SYS_gettimeofday");
 }
 
+static int gettimeofday_vdso_wrapper(struct timeval *tv, struct timezone *tz)
+{
+	return DO_VDSO_CALL(gettimeofday_vdso, int, 2, tv, tz);
+}
+
 static void gettimeofday_vdso_nofail(struct timeval *tv, struct timezone *tz)
 {
 	int err;
 
-	err = gettimeofday_vdso(tv, tz);
+	err = gettimeofday_vdso_wrapper(tv, tz);
 	if (err)
 		error(EXIT_FAILURE, errno, "gettimeofday");
 }
@@ -153,7 +158,7 @@ static void gettimeofday_bench(struct ctx *ctx, struct bench_results *res)
 	struct timeval tv;
 
 	if (vdso_has_gettimeofday()) {
-		BENCH(ctx, gettimeofday_vdso(&tv, NULL),
+		BENCH(ctx, gettimeofday_vdso_wrapper(&tv, NULL),
 		      &res->vdso_interval);
 	}
 
@@ -196,7 +201,7 @@ static void do_gettimeofday(void *arg, struct syscall_result *res)
 	if (args->force_syscall)
 		err = gettimeofday_syscall_wrapper(args->tv, args->tz);
 	else
-		err = gettimeofday_vdso(args->tv, args->tz);
+		err = gettimeofday_vdso_wrapper(args->tv, args->tz);
 	record_syscall_result(res, err, errno);
 }
 
