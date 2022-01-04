@@ -6,7 +6,9 @@ library support for the VDSO is not necessary to use vdsotest.
 
 Building
 --------
+```
 $ ./autogen.sh && ./configure && make
+```
 
 Usage
 -------
