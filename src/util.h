@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+deliberate build break for CI
+
 #ifndef VDSOTEST_UTIL_H
 #define VDSOTEST_UTIL_H
 
