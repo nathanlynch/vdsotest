@@ -55,3 +55,5 @@ EXTRA_DIST += \
 	src/clock_gettime_template.c \
 	src/vdsotest-all.in \
 	src/vdsotest-bench.in
+
+TESTS = fail
