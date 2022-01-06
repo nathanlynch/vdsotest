@@ -1,0 +1,84 @@
+name: CI
+
+# Controls when the workflow will run.
+on:
+  # This allows the build to be triggered manually via the github UI.
+  workflow_dispatch:
+
+  # Push to any branch
+  push:
+
+  # Any pull request
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        host: [x86_64-linux-gnu, powerpc-linux-gnu, powerpc64-linux-gnu, powerpc64le-linux-gnu]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Register problem matchers
+      run: |
+        echo "::add-matcher::.github/problem-matchers/compiler-source.json"
+        echo "::add-matcher::.github/problem-matchers/compiler-non-source.json"
+
+    - name: Install cross compiler
+      if: matrix.host != 'x86_64-linux-gnu'
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-${{ matrix.host }}
+
+    - name: autogen
+      run: ./autogen.sh
+
+    - name: configure
+      run: ./configure --host=${{ matrix.host }}
+
+    - name: make
+      run: make -j $(nproc)
+
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: vdsotest-${{ matrix.host }}
+        path: |
+          ./vdsotest
+          ./vdsotest-all
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    strategy:
+      matrix:
+        host: [x86_64-linux-gnu]
+
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: vdsotest-${{ matrix.host }}
+
+    - name: set permissions
+      run: chmod u+x vdsotest vdsotest-all
+
+    - name: vdsotest-all
+      run: vdsotest=./vdsotest ./vdsotest-all
+
+  distcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: autogen
+      run: ./autogen.sh
+
+    - name: configure
+      run: ./configure
+
+    - name: distcheck
+      run: make distcheck
