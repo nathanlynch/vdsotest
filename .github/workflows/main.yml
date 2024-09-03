@@ -59,7 +59,7 @@ jobs:
         host: [x86_64-linux-gnu]
 
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4
       with:
         name: vdsotest-${{ matrix.host }}
 
