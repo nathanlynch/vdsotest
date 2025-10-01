@@ -177,7 +177,7 @@ struct gettimeofday_args {
 
 enum gtod_arg_type {
 	valid,
-	nullptr,
+	null_ptr,
 	bogus,
 	prot_none,
 	prot_read,
@@ -186,7 +186,7 @@ enum gtod_arg_type {
 
 static const char *gtod_arg_type_str[] = {
 	[valid] = "valid",
-	[nullptr] = "NULL",
+	[null_ptr] = "NULL",
 	[bogus] = "UINTPTR_MAX",
 	[prot_none] = "page (PROT_NONE)",
 	[prot_read] = "page (PROT_READ)",
@@ -213,7 +213,7 @@ static void *gtod_arg_alloc(enum gtod_arg_type t)
 	case valid:
 		ret = xmalloc(sysconf(_SC_PAGESIZE));
 		break;
-	case nullptr:
+	case null_ptr:
 		ret = NULL;
 		break;
 	case bogus:
@@ -239,7 +239,7 @@ static void gtod_arg_release(void *buf, enum gtod_arg_type t)
 	case valid:
 		xfree(buf);
 		break;
-	case nullptr:
+	case null_ptr:
 	case bogus:
 		break;
 	case prot_none:
@@ -257,7 +257,7 @@ static bool __pure gtod_args_should_fault(enum gtod_arg_type tv,
 {
 	switch (tv) {
 	case valid:
-	case nullptr:
+	case null_ptr:
 		break;
 	case bogus:
 	case prot_none:
@@ -271,7 +271,7 @@ static bool __pure gtod_args_should_fault(enum gtod_arg_type tv,
 
 	switch (tz) {
 	case valid:
-	case nullptr:
+	case null_ptr:
 		break;
 	case bogus:
 	case prot_none:
